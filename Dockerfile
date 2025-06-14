@@ -17,26 +17,27 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libcurl4-openssl-dev \
-    libsodium-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath curl sodium
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath curl
 
 # تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# تحديد مجلد العمل
+# إنشاء مجلد التطبيق
 WORKDIR /var/www
 
-# نسخ الملفات إلى الحاوية
+# نسخ كل الملفات
 COPY . .
 
-# تثبيت الاعتمادات بدون باكدجات التطوير
+# تثبيت dependecies Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# إعداد صلاحيات مجلد التخزين
+# إعداد صلاحيات التخزين
 RUN chown -R www-data:www-data /var/www/storage
 
 # فتح البورت
 EXPOSE 8000
 
-# الأمر الرئيسي لتشغيل التطبيق (يتم تفعيل config:cache عند التشغيل وليس وقت البناء لضمان قراءة APP_KEY من البيئة)
-CMD php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+# نسخ ملفات السكربتات
+CMD  php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+
+
